@@ -17,6 +17,11 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <WarningLevel>4</WarningLevel>
     <TargetFrameworkProfile />
+    <SignAssembly>False</SignAssembly>
+    <DelaySign>False</DelaySign>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <RunCodeAnalysis>False</RunCodeAnalysis>
+    <SourceAnalysisOverrideSettingsFile>C:\Users\ylin68\AppData\Roaming\ICSharpCode\SharpDevelop5\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -30,9 +35,10 @@
     <DebugSymbols>True</DebugSymbols>
     <DebugType>Full</DebugType>
     <Optimize>False</Optimize>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <StartAction>Project</StartAction>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -68,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API.cs" />
+    <Compile Include="CommonSrc\CRC32.cs" />
     <Compile Include="IniFileCs.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="ProcessLauncher.cs" />
@@ -81,9 +88,59 @@
     <Compile Include="Test1.cs" />
     <Compile Include="Test2.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="Zip\ComHelper.cs" />
+    <Compile Include="Zip\EncryptionAlgorithm.cs" />
+    <Compile Include="Zip\Events.cs" />
+    <Compile Include="Zip\Exceptions.cs" />
+    <Compile Include="Zip\ExtractExistingFileAction.cs" />
+    <Compile Include="Zip\FileSelector.cs" />
+    <Compile Include="Zip\OffsetStream.cs" />
+    <Compile Include="Zip\Shared.cs" />
+    <Compile Include="Zip\WinZipAes.cs" />
+    <Compile Include="Zip\ZipConstants.cs" />
+    <Compile Include="Zip\ZipCrypto.cs" />
+    <Compile Include="Zip\ZipDirEntry.cs" />
+    <Compile Include="Zip\ZipEntry.cs" />
+    <Compile Include="Zip\ZipEntry.Extract.cs" />
+    <Compile Include="Zip\ZipEntry.Read.cs" />
+    <Compile Include="Zip\ZipEntry.Write.cs" />
+    <Compile Include="Zip\ZipEntrySource.cs" />
+    <Compile Include="Zip\ZipErrorAction.cs" />
+    <Compile Include="Zip\ZipFile.AddUpdate.cs" />
+    <Compile Include="Zip\ZipFile.Check.cs" />
+    <Compile Include="Zip\ZipFile.cs" />
+    <Compile Include="Zip\ZipFile.Events.cs" />
+    <Compile Include="Zip\ZipFile.Extract.cs" />
+    <Compile Include="Zip\ZipFile.Read.cs" />
+    <Compile Include="Zip\ZipFile.Save.cs" />
+    <Compile Include="Zip\ZipFile.SaveSelfExtractor.cs" />
+    <Compile Include="Zip\ZipFile.Selector.cs" />
+    <Compile Include="Zip\ZipFile.x-IEnumerable.cs" />
+    <Compile Include="Zip\ZipInputStream.cs" />
+    <Compile Include="Zip\ZipOutputStream.cs" />
+    <Compile Include="Zip\ZipSegmentedStream.cs" />
+    <Compile Include="Zlib\Deflate.cs" />
+    <Compile Include="Zlib\DeflateStream.cs" />
+    <Compile Include="Zlib\GZipStream.cs" />
+    <Compile Include="Zlib\Inflate.cs" />
+    <Compile Include="Zlib\InfTree.cs" />
+    <Compile Include="Zlib\ParallelDeflateOutputStream.cs" />
+    <Compile Include="Zlib\Tree.cs" />
+    <Compile Include="Zlib\Zlib.cs" />
+    <Compile Include="Zlib\ZlibBaseStream.cs" />
+    <Compile Include="Zlib\ZlibCodec.cs" />
+    <Compile Include="Zlib\ZlibConstants.cs" />
+    <Compile Include="Zlib\ZlibStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Zlib\LICENSE.jzlib.txt" />
+    <None Include="Zlib\License.zlib.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CommonSrc" />
+    <Folder Include="Zip" />
+    <Folder Include="Zlib" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

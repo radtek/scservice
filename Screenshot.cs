@@ -59,7 +59,7 @@ namespace sc
 			IniFile ini=new IniFile();
 			ini.Load(stream);
 			Count=ini.GetInt("main","count",Count);
-			Interval=ini.GetInt("main","nterval",Interval);
+			Interval=ini.GetInt("main","interval",Interval);
 			Quality=ini.GetLong("main","quality",Quality);
 			SkipLocked=ini.GetBoolean("main","skipLocked",SkipLocked);
 			SkipScreenSaver=ini.GetBoolean("main","skipScreenSaver",SkipScreenSaver);
@@ -96,7 +96,6 @@ namespace sc
 		
 		public static void Take()
 		{
-			stop=false;
             IntPtr handle=API.GetDesktopWindow();
             IntPtr hdcSrc = API.GetWindowDC(handle);
             API.RECT windowRect = new API.RECT();

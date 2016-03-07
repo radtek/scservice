@@ -37,7 +37,8 @@ skipLocked=true
 extension=dat
 [storage]
 zip=true
-zipExtension=dat");
+zipExtension=dat
+zipPassword=asdf");
 			using(StreamWriter sw=new StreamWriter("c.dat",false))
 			{
 				sw.Write(encoded);

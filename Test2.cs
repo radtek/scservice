@@ -8,6 +8,7 @@
  */
 using System;
 using NUnit.Framework;
+using Ionic.Zip;
 
 namespace scservice
 {
@@ -15,10 +16,16 @@ namespace scservice
 	public class Test2
 	{
 		[Test]
-		public void TestMethod()
+		public void TestZip()
 		{
 			// TODO: Add your test.
-			
+			string Content = "This string will be the content of the Readme.txt file in the zip archive.";
+			using (ZipFile zip1 = new ZipFile())
+			{
+			  zip1.AddEntry("Readme.txt", Content);
+			  zip1.Comment = "This zip file was created at " + System.DateTime.Now.ToString("G");
+			  zip1.Save("Content.zip");
+			}				
 		}
 	}
 }

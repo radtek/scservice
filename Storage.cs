@@ -8,7 +8,7 @@
  */
 using System;
 using System.IO;
-using System.IO.Compression;
+using Ionic.Zip;
 
 namespace sc
 {
@@ -18,14 +18,16 @@ namespace sc
 	public static class Storage
 	{
 		static string _archiveName;
-		static FileStream _stream;
-		static ZipArchive _archive;
+		static ZipFile _archive;
+		
 		public static bool Zip{get;private set;}
 		public static string ZipExtension{get; private set;}
+		public static string ZipPassword{get;private set;}
 		static Storage()
 		{
 			Zip=true;
 			ZipExtension=".zip";
+			ZipPassword="";
 		}
 
 		public static void Config(string file)
@@ -43,6 +45,7 @@ namespace sc
 			Zip=ini.GetBoolean("storage","zip",Zip);
 			ZipExtension=ini.GetString("storage","zipExtension",ZipExtension);
 			if(ZipExtension[0]!='.') ZipExtension="."+ZipExtension;
+			ZipPassword=ini.GetString("storage","zipPassword",ZipPassword);
 		}
 		
 		public static void Save(Stream inputStream,string filename)
@@ -51,16 +54,16 @@ namespace sc
 			if(Zip)
 			{
 				string newName=DateTime.Now.ToString("yyMMddHHmm")+ZipExtension;
-				if(newName!=_archiveName || _stream==null)
+				if(newName!=_archiveName || _archive==null)
 				{
 					Close();
 					_archiveName=newName;
 					Open();
 				}
-				ZipArchiveEntry entry=_archive.CreateEntry(filename);
-				using(Stream entryStream=entry.Open())
+				using(MemoryStream ms=new MemoryStream())
 				{
-					inputStream.CopyTo(entryStream);
+					inputStream.CopyTo(ms);
+					ZipEntry entry=_archive.AddEntry(filename,ms.ToArray());
 				}
 			}
 			else
@@ -73,15 +76,21 @@ namespace sc
 		}
 		public static void Close()
 		{
-			if(_archive!=null) _archive.Dispose();
-			_archive=null;
-			if(_stream!=null) _stream.Dispose();
-			_stream=null;
+			if(_archive!=null)
+			{
+				_archive.Save();
+				_archive.Dispose();
+				_archive=null;
+			}
+			
 		}
-		public static void Open()
+		static void Open()
 		{
-			_stream=new FileStream(_archiveName,FileMode.Create);
-			_archive=new ZipArchive(_stream,ZipArchiveMode.Create,true);
+			_archive=new ZipFile(_archiveName);
+			if(ZipPassword!="")
+			{
+				_archive.Password=ZipPassword;
+			}
 		}
 	}
 }
