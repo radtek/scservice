@@ -38,6 +38,7 @@ extension=dat
 [storage]
 zip=true
 zipExtension=dat
+entries=100
 zipPassword=asdf");
 			using(StreamWriter sw=new StreamWriter("c.dat",false))
 			{
@@ -49,6 +50,7 @@ zipPassword=asdf");
 			Assert.AreEqual(".dat",ScreenShot.Extension);
 			Assert.AreEqual(true,Storage.Zip);
 			Assert.AreEqual(".dat",Storage.ZipExtension);
+			Assert.AreEqual(100,Storage.Entries);
 		}
 		[Test]
 		public void BenchmarkLocked()

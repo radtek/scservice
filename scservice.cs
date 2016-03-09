@@ -67,6 +67,7 @@ namespace scservice
 			}
 			while(File.Exists("stop"))
 			{
+				Thread.Sleep(100);
 			}
 		}
 		
