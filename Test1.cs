@@ -11,6 +11,7 @@ using NUnit.Framework;
 using System.Linq;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
 
 namespace sc
 {
@@ -37,7 +38,7 @@ skipLocked=true
 extension=dat
 [storage]
 zip=true
-zipExtension=dat
+zipExtension=
 entries=100
 zipPassword=asdf");
 			using(StreamWriter sw=new StreamWriter("c.dat",false))
@@ -49,7 +50,7 @@ zipPassword=asdf");
 			Assert.AreEqual(3000,ScreenShot.Interval);
 			Assert.AreEqual(".dat",ScreenShot.Extension);
 			Assert.AreEqual(true,Storage.Zip);
-			Assert.AreEqual(".dat",Storage.ZipExtension);
+			Assert.AreEqual("",Storage.ZipExtension);
 			Assert.AreEqual(100,Storage.Entries);
 		}
 		[Test]

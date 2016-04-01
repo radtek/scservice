@@ -8,6 +8,7 @@
  */
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace launcher
 {
@@ -24,11 +25,11 @@ namespace launcher
 	
 	    [DllImport("Kernel32.dll", EntryPoint = "WTSGetActiveConsoleSessionId")]
 	    internal static extern int WTSGetActiveConsoleSessionId();
-	
+
 	    [DllImport("WtsApi32.dll", SetLastError = true)]
 	    [return: MarshalAs(UnmanagedType.Bool)]
 	    internal static extern bool WTSQueryUserToken(int SessionId, out IntPtr phToken);
-	
+
 	    [StructLayout(LayoutKind.Sequential)]
 	    internal struct PROCESS_INFORMATION
 	    {
@@ -60,5 +61,36 @@ namespace launcher
 	        public IntPtr stdOutputHandle;
 	        public IntPtr stdErrorHandle;
 	    }
-	} 
+	    
+	    [DllImport("user32.dll")]
+    	internal static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, int lParam);
+
+		[DllImport("user32.dll")]    	
+		internal static extern bool EnumThreadWindows(uint dwThreadId, EnumWindowsProc lpfn, int lParam);    	
+		
+		internal delegate bool EnumWindowsProc(IntPtr hwnd, int lParam);
+		
+		[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=true)]
+		public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int processId);
+		
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		internal static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+		
+		internal const UInt32 WM_CLOSE = 0x0010;		
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		internal static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+		
+		[DllImport("user32.dll")]  
+		internal static extern int GetWindowTextLength(IntPtr hWnd);
+		
+		internal static string GetWindowText(IntPtr hWnd)
+		{
+		    // Allocate correct string length first
+		    int length       = GetWindowTextLength(hWnd);
+		    StringBuilder sb = new StringBuilder(length + 1);
+		    GetWindowText(hWnd, sb, sb.Capacity);
+		    return sb.ToString();
+		}
+	}
 }

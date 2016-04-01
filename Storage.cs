@@ -49,7 +49,7 @@ namespace sc
 			ini.Load(stream);
 			Zip=ini.GetBoolean("storage","zip",Zip);
 			ZipExtension=ini.GetString("storage","zipExtension",ZipExtension);
-			if(ZipExtension[0]!='.') ZipExtension="."+ZipExtension;
+			if(ZipExtension!="" && ZipExtension[0]!='.') ZipExtension="."+ZipExtension;
 			ZipPassword=ini.GetString("storage","zipPassword",ZipPassword);
 			Entries=ini.GetInt("storage","entries",Entries);
 			if(Entries<=0) Entries=50;
@@ -63,7 +63,8 @@ namespace sc
 				if(_entries>=Entries || _archive==null)
 				{
 					Close();
-					_archiveName=new System.Guid(Encoding.ASCII.GetBytes(DateTime.Now.ToString("yyyyMMddHHmmssff")))+ZipExtension;
+					//_archiveName=new System.Guid(Encoding.ASCII.GetBytes(DateTime.Now.ToString("yyyyMMddHHmmssff")))+ZipExtension;
+					_archiveName=System.Guid.NewGuid().ToString()+ZipExtension;
 					Open();
 					_entries=0;
 				}

@@ -3,7 +3,7 @@
  * User: YLIN68
  * Date: 3/3/2016
  * Time: 2:22 PM
- * 
+ *
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
@@ -23,11 +23,21 @@ namespace scservice
 	public class scservice : ServiceBase
 	{
 		public const string MyServiceName = "scservice";
+		System.Diagnostics.EventLog eventLog;
 		
 		public scservice()
 		{
 			InitializeComponent();
+			CanHandleSessionChangeEvent=true;
 			System.IO.Directory.SetCurrentDirectory(System.AppDomain.CurrentDomain.BaseDirectory);
+			eventLog = new System.Diagnostics.EventLog();
+			if (!System.Diagnostics.EventLog.SourceExists("scservice"))
+			{
+					System.Diagnostics.EventLog.CreateEventSource(
+						"scservice","Application");
+			}
+			eventLog.Source = "scservice";
+			eventLog.Log = "Application";
 		}
 		
 		private void InitializeComponent()
@@ -52,7 +62,17 @@ namespace scservice
 			// TODO: Add start code here (if required) to start your service.
 			if(File.Exists("stop"))
 				File.Delete("stop");
-			Execute(System.Reflection.Assembly.GetEntryAssembly().Location,System.AppDomain.CurrentDomain.BaseDirectory);
+			Process p=GetBackgroundProcess();
+			if(p!=null)
+			{
+				eventLog.WriteEntry("Background process already running: "+p.MainModule.FileName);
+				return;
+			}
+
+			if(!Execute(System.Reflection.Assembly.GetEntryAssembly().Location,"",System.AppDomain.CurrentDomain.BaseDirectory))
+			{
+				eventLog.WriteEntry("No user is logged-on.");
+			}
 		}
 		
 		/// <summary>
@@ -61,17 +81,42 @@ namespace scservice
 		protected override void OnStop()
 		{
 			// TODO: Add tear-down code here (if required) to stop your service.
-			using(StreamWriter sw=new StreamWriter("stop"))
+			Process p=GetBackgroundProcess();
+			if(p!=null)
 			{
-				sw.Write("1");
-			}
-			while(File.Exists("stop"))
-			{
-				Thread.Sleep(100);
-			}
+				Execute(System.Reflection.Assembly.GetEntryAssembly().Location," stop",System.AppDomain.CurrentDomain.BaseDirectory);
+	            return;
+        	}
+			eventLog.WriteEntry("Background process not running.");
 		}
 		
-		public void Execute(string file,string dir)
+		Process GetBackgroundProcess()
+		{
+			Process proc=Process.GetCurrentProcess();
+			foreach(Process p in Process.GetProcessesByName(proc.ProcessName))
+			{
+				if(p.Id!=proc.Id && p.SessionId!=proc.SessionId && p.MainModule.FileName==proc.MainModule.FileName)
+				{
+					return p;
+				}
+			}
+			return null;
+		}
+		
+		protected override void OnSessionChange(SessionChangeDescription changeDescription)
+		{
+		    switch (changeDescription.Reason)
+		    {
+		        case SessionChangeReason.SessionLogoff:
+		            break;
+		        case SessionChangeReason.SessionLogon:
+		            if(changeDescription.SessionId==NativeMethods.WTSGetActiveConsoleSessionId())
+		            	OnStart(null);
+		            break;
+		    }
+		}
+		
+		public bool Execute(string file,string param,string dir)
 		{
 		    IntPtr sessionTokenHandle = IntPtr.Zero;
 		    try
@@ -79,8 +124,14 @@ namespace scservice
 		        sessionTokenHandle = SessionFinder.GetLocalInteractiveSession();
 		        if (sessionTokenHandle != IntPtr.Zero)
 		        {
-		            ProcessLauncher.StartProcessAsUser(file, "" , dir, sessionTokenHandle);
+		            ProcessLauncher.StartProcessAsUser(file, param , dir, sessionTokenHandle);
 		        }
+		    }
+		    catch(System.ComponentModel.Win32Exception ex)
+		    {
+		    	if(ex.NativeErrorCode==1008) //ERROR_NO_TOKEN: No user is logged-on
+		    		return false;
+		    	throw ex;
 		    }
 		    catch(Exception ex)
 		    {
@@ -94,6 +145,7 @@ namespace scservice
 		            NativeMethods.CloseHandle(sessionTokenHandle);
 		        }
 		    }
+		    return true;
 		}
 		
 	}

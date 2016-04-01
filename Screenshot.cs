@@ -23,8 +23,19 @@ namespace sc
 	{		
 		static ImageCodecInfo imageCodecInfo;
 		static EncoderParameters encoderParams=new EncoderParameters(1);
-		static bool stop=false;
+		static bool stopped=true;
 		
+        static IntPtr handle;
+        static IntPtr hdcSrc;
+        static API.RECT windowRect;
+        static int width;
+        static int height;
+        static IntPtr hdcDest;
+        static IntPtr hBitmap; 
+        static IntPtr hOld;
+        static Bitmap bmp=null,prevBmp=null;
+        static object locker=new object();
+
 		public static bool SkipLocked{get;private set;}
 		public static bool SkipScreenSaver{get;private set;}
 		public static int Count{get;private set;}
@@ -64,7 +75,7 @@ namespace sc
 			SkipLocked=ini.GetBoolean("main","skipLocked",SkipLocked);
 			SkipScreenSaver=ini.GetBoolean("main","skipScreenSaver",SkipScreenSaver);
 			Extension=ini.GetString("main","extension",Extension);
-			if(Extension[0]!='.') Extension="."+Extension;
+			if(Extension!="" && Extension[0]!='.') Extension="."+Extension;
 		}
 		
 		public static void Config(string file)
@@ -77,7 +88,17 @@ namespace sc
 		
 		public static void Stop()
 		{
-			stop=true;
+			lock(locker)
+			{
+				if(stopped) return;
+	            if(bmp!=null) bmp.Dispose();
+	            // clean up 
+	            API.DeleteDC(hdcDest);
+	            API.ReleaseDC(handle,hdcSrc);
+	            API.DeleteObject(hBitmap);
+	            Storage.Close();
+				stopped=true;
+			}
 		}
 		
 		public static void Start()
@@ -91,59 +112,62 @@ namespace sc
 			{
 			}
 			SetEncoderParameters(Quality);
-			Take();
-		}
-		
-		public static void Take()
-		{
-            IntPtr handle=API.GetDesktopWindow();
-            IntPtr hdcSrc = API.GetWindowDC(handle);
-            API.RECT windowRect = new API.RECT();
-            API.GetWindowRect(handle,ref windowRect);
-            int width = windowRect.right - windowRect.left;
-            int height = windowRect.bottom - windowRect.top;
-            IntPtr hdcDest = API.CreateCompatibleDC(hdcSrc);
-            IntPtr hBitmap = API.CreateCompatibleBitmap(hdcSrc,width,height); 
-            IntPtr hOld;
-            Bitmap bmp=null,prevBmp=null;
+			lock(locker)
+			{
+	            handle=API.GetDesktopWindow();
+	            hdcSrc = API.GetWindowDC(handle);
+	            windowRect = new API.RECT();
+	            API.GetWindowRect(handle,ref windowRect);
+	            width = windowRect.right - windowRect.left;
+	            height = windowRect.bottom - windowRect.top;
+	            hdcDest = API.CreateCompatibleDC(hdcSrc);
+	            hBitmap = API.CreateCompatibleBitmap(hdcSrc,width,height);
+	            stopped=false;
+			}
 			int i=0;
 			while(true)
-            {
-				if((SkipScreenSaver && Util.IsScreensaverRunning()) ||
-				   (SkipLocked && Util.IsWorkstationLocked())
-				  )
+			{
+				lock(locker)
 				{
-					Thread.Sleep(Interval);
-					continue;
+					if(stopped) break;
+					Take();
 				}
-            	hOld = API.SelectObject(hdcDest,hBitmap);
-	            API.BitBlt(hdcDest,0,0,width,height,hdcSrc,0,0,API.SRCCOPY);
-	            API.SelectObject(hdcDest,hOld);
-				bmp = Image.FromHbitmap(hBitmap);
-				if(prevBmp==null || IsDifferent(prevBmp,bmp))
-				{
-					using(MemoryStream stream=new MemoryStream())
-					{
-						bmp.Save(stream,imageCodecInfo,encoderParams);
-						Storage.Save(stream,DateTime.Now.ToString("yyMMddHHmmssfff")+Extension);
-					}
-				}
-				if(prevBmp!=null) prevBmp.Dispose();
-				prevBmp=bmp;
 				if(Count>0)
 				{
 					i++;
 					if(i>=Count) break;
 				}
-				if(stop) break;
+				lock(locker)
+				{
+					if(stopped) break;
+				}
 				Thread.Sleep(Interval);
-            }
-            if(bmp!=null) bmp.Dispose();
-            // clean up 
-            API.DeleteDC(hdcDest);
-            API.ReleaseDC(handle,hdcSrc);
-            API.DeleteObject(hBitmap);
-            Storage.Close();
+			}
+			if(!stopped) Stop();
+		}
+		
+		public static void Take()
+		{
+			if((SkipScreenSaver && Util.IsScreensaverRunning()) ||
+			   (SkipLocked && Util.IsWorkstationLocked())
+			  )
+			{
+				return;
+			}
+        	hOld = API.SelectObject(hdcDest,hBitmap);
+            API.BitBlt(hdcDest,0,0,width,height,hdcSrc,0,0,API.SRCCOPY);
+            API.SelectObject(hdcDest,hOld);
+			bmp = Image.FromHbitmap(hBitmap);
+			if(prevBmp==null || IsDifferent(prevBmp,bmp))
+			{
+				using(MemoryStream stream=new MemoryStream())
+				{
+					bmp.Save(stream,imageCodecInfo,encoderParams);
+					Storage.Save(stream,DateTime.Now.ToString("yyMMddHHmmssfff")+Extension);
+				}
+			}
+			if(prevBmp!=null) prevBmp.Dispose();
+			prevBmp=bmp;
 		}
 
 		public static bool IsDifferent(Bitmap bmp1,Bitmap bmp2)

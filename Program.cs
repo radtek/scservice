@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
+using System.Windows.Forms;
 using sc;
 
 namespace scservice
@@ -29,29 +30,37 @@ namespace scservice
 				ServiceBase.Run(new ServiceBase[] { new scservice() });
 			else if(args.Length==1)
 			{
-				if(!File.Exists(args[0])) return;
-				using(StreamReader sr=new StreamReader(args[0]))
+				if(args[0].ToLower()=="stop")
 				{
-					using(StreamWriter sw=new StreamWriter(args[0]+".dat"))
-					{
-						sw.Write(Util.Encode(sr.ReadToEnd()));
-					}
+					CloseOtherProcess();
+				}
+				else
+				{
+					EncodeFile(args[0]);
 				}
 			}
 			else
 			{
 				System.IO.Directory.SetCurrentDirectory(System.AppDomain.CurrentDomain.BaseDirectory);
-				Task task=Task.Run(()=>ScreenShot.Start());
-				while(true)
+				Application.Run(new HiddenForm());
+			}
+		}
+		
+		static void CloseOtherProcess()
+		{
+			HiddenForm form=new HiddenForm();
+			form.CloseOtherProcess();
+			form.Close();
+		}
+		
+		static void EncodeFile(string filename)
+		{
+			if(!File.Exists(filename)) return;
+			using(StreamReader sr=new StreamReader(filename))
+			{
+				using(StreamWriter sw=new StreamWriter(filename+".dat"))
 				{
-					if(File.Exists("stop"))
-					{
-						ScreenShot.Stop();
-						Task.WaitAll(task);
-						File.Delete("stop");
-						break;
-					}
-					Thread.Sleep(3000);
+					sw.Write(Util.Encode(sr.ReadToEnd()));
 				}
 			}
 		}
