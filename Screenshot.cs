@@ -107,6 +107,7 @@ namespace sc
 			{
 				Config("c.dat");
 				Storage.Config("c.dat");
+				Remote.Config("c.dat");
 			}
 			catch
 			{

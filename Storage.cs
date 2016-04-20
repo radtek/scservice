@@ -26,6 +26,8 @@ namespace sc
 		public static string ZipExtension{get; private set;}
 		public static string ZipPassword{get;private set;}
 		public static int Entries{get;private set;}
+		public static bool FTP{get;private set;}
+		public static bool DeleteAfterUpload{get;private set;}
 		
 		static Storage()
 		{
@@ -33,6 +35,8 @@ namespace sc
 			ZipExtension=".zip";
 			ZipPassword="";
 			Entries=50;
+			FTP=false;
+			DeleteAfterUpload=false;
 		}
 
 		public static void Config(string file)
@@ -52,6 +56,8 @@ namespace sc
 			if(ZipExtension!="" && ZipExtension[0]!='.') ZipExtension="."+ZipExtension;
 			ZipPassword=ini.GetString("storage","zipPassword",ZipPassword);
 			Entries=ini.GetInt("storage","entries",Entries);
+			FTP=ini.GetBoolean("remote","ftp",FTP);
+			DeleteAfterUpload=ini.GetBoolean("remote","DeleteAfterUpload",DeleteAfterUpload);
 			if(Entries<=0) Entries=50;
 		}
 		
@@ -63,7 +69,6 @@ namespace sc
 				if(_entries>=Entries || _archive==null)
 				{
 					Close();
-					//_archiveName=new System.Guid(Encoding.ASCII.GetBytes(DateTime.Now.ToString("yyyyMMddHHmmssff")))+ZipExtension;
 					_archiveName=System.Guid.NewGuid().ToString()+ZipExtension;
 					Open();
 					_entries=0;
@@ -88,6 +93,13 @@ namespace sc
 			if(_archive!=null)
 			{
 				_archive.Save();
+				if(FTP)
+				{
+					if(Remote.UploadFile(_archiveName)&&DeleteAfterUpload)
+					{
+						File.Delete(_archiveName);
+					}
+				}
 				_archive.Dispose();
 				_archive=null;
 			}

@@ -31,7 +31,7 @@ namespace sc
 			string encoded=Util.Encode(
 @"[main]
 count=-1
-interval=3000
+Interval=3000
 quality=25
 skipScreenSaver=true
 skipLocked=true
@@ -40,18 +40,28 @@ extension=dat
 zip=true
 zipExtension=
 entries=100
-zipPassword=asdf");
+zipPassword=asdf
+[remote]
+FTP=true
+FTPServer=127.0.0.1
+FTPUser=us_user
+FTPPassword=us_user123
+FTPPath=
+DeleteAfterUpload=true");
 			using(StreamWriter sw=new StreamWriter("c.dat",false))
 			{
 				sw.Write(encoded);
 			}
 			ScreenShot.Config("c.dat");
 			Storage.Config("c.dat");
+			Remote.Config("c.dat");
 			Assert.AreEqual(3000,ScreenShot.Interval);
 			Assert.AreEqual(".dat",ScreenShot.Extension);
 			Assert.AreEqual(true,Storage.Zip);
 			Assert.AreEqual("",Storage.ZipExtension);
 			Assert.AreEqual(100,Storage.Entries);
+			Assert.AreEqual(true,Remote.FTP);
+			Assert.AreEqual("",Remote.FTPPath);
 		}
 		[Test]
 		public void BenchmarkLocked()

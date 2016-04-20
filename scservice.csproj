@@ -67,6 +67,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
@@ -76,6 +77,20 @@
   <ItemGroup>
     <Compile Include="API.cs" />
     <Compile Include="CommonSrc\CRC32.cs" />
+    <Compile Include="FTPClient\FtpClient.cs" />
+    <Compile Include="FTPClient\FtpDataStream.cs" />
+    <Compile Include="FTPClient\FtpEnums.cs" />
+    <Compile Include="FTPClient\FtpExceptions.cs" />
+    <Compile Include="FTPClient\FtpExtensionAttribute.cs" />
+    <Compile Include="FTPClient\FtpExtensions.cs" />
+    <Compile Include="FTPClient\FtpHash.cs" />
+    <Compile Include="FTPClient\FtpListItem.cs" />
+    <Compile Include="FTPClient\FtpReply.cs" />
+    <Compile Include="FTPClient\FtpSocketStream.cs" />
+    <Compile Include="FTPClient\FtpTrace.cs" />
+    <Compile Include="FTPClient\IFtpClient.cs" />
+    <Compile Include="FTPClient\IFtpListItem.cs" />
+    <Compile Include="FTPClient\IFtpReply.cs" />
     <Compile Include="HiddenForm.cs" />
     <Compile Include="IniFileCs.cs" />
     <Compile Include="NativeMethods.cs" />
@@ -83,6 +98,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Remote.cs" />
     <Compile Include="Screenshot.cs" />
     <Compile Include="scservice.cs" />
     <Compile Include="SessionFinder.cs" />
@@ -141,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CommonSrc" />
+    <Folder Include="FTPClient" />
     <Folder Include="Zip" />
     <Folder Include="Zlib" />
   </ItemGroup>
